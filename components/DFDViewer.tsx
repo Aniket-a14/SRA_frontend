@@ -1,10 +1,9 @@
 "use client"
 
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Layers, Download } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 import {
     ReactFlow,
     Background,
@@ -14,6 +13,7 @@ import {
     MarkerType,
     NodeProps,
     Node,
+    Edge,
     Handle,
     Position,
     ReactFlowProvider,
@@ -33,7 +33,7 @@ interface DFDNodeData extends Record<string, unknown> {
 type DFDNodeType = Node<DFDNodeData>;
 
 // -----------------------------------------------------------------------------
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 // ... (keep nodeTypes as is)
 
@@ -126,6 +126,7 @@ type DFDNode = {
     id: string;
     type: 'process' | 'external_entity' | 'data_store';
     label: string;
+    position?: { x: number; y: number };
 };
 
 type DFDFlow = {
@@ -152,55 +153,59 @@ export type DFDInput = {
 // 3. HELPER: DATA MAPPING & LAYOUT (DAGRE)
 // -----------------------------------------------------------------------------
 
-const mapToReactFlow = (dfdData: DFDLevel | undefined, direction = 'LR', idPrefix = '') => {
-    if (!dfdData) return { nodes: [], edges: [] };
-
-    const isHorizontal = direction === 'LR';
-
-    const initialNodes = dfdData.nodes.map((node: any) => ({
-        id: idPrefix + node.id,
-        type: node.type,
-        data: { label: node.label },
-        // Use backend provided position, or default to 0,0
-        position: node.position || { x: 0, y: 0 },
-        targetPosition: isHorizontal ? Position.Left : Position.Top,
-        sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
-    }));
-
-    const initialEdges = dfdData.flows.map((flow, i) => ({
-        id: `${idPrefix}e-${i}-${flow.from}-${flow.to}`,
-        source: idPrefix + flow.from,
-        target: idPrefix + flow.to,
-        label: flow.label,
-        type: 'smoothstep',
-        animated: true,
-        markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: '#334155',
-            width: 20,
-            height: 20
-        },
-        style: { stroke: '#64748b', strokeWidth: 2.5 },
-        labelStyle: { fill: '#0f172a', fontWeight: 800, fontSize: 10 },
-        labelBgStyle: { fill: '#f8fafc', fillOpacity: 0.9, rx: 4 }
-    }));
-
-    return { nodes: initialNodes, edges: initialEdges };
-};
+// (mapToReactFlow removed because it's replaced by DiagramCanvas logic or was unused)
 
 interface DiagramCanvasProps {
     title: string;
     data: DFDLevel | undefined;
     isExport?: boolean;
-    direction?: 'LR' | 'TB';
-    levelPrefix: string;
 }
 
-const DiagramCanvas = ({ title, data, isExport = false, direction = 'LR', levelPrefix }: DiagramCanvasProps) => {
+const DiagramCanvas = ({ title, data, isExport = false }: DiagramCanvasProps) => {
     const [nodes, setNodes, onNodesChange] = useNodesState<DFDNodeType>([]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState<any>([]);
-    const { fitView } = useReactFlow();
+    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const containerRef = useRef<HTMLDivElement>(null);
+    const { fitView } = useReactFlow();
+
+    React.useEffect(() => {
+        if (!data) return;
+
+        const initialNodes = data.nodes.map((node: DFDNode) => ({
+            id: node.id,
+            type: node.type,
+            data: { label: node.label },
+            position: node.position || { x: 0, y: 0 },
+            targetPosition: Position.Left,
+            sourcePosition: Position.Right,
+        }));
+
+        const initialEdges = data.flows.map((flow, i) => ({
+            id: `e-${i}-${flow.from}-${flow.to}`,
+            source: flow.from,
+            target: flow.to,
+            label: flow.label,
+            type: 'smoothstep',
+            animated: true,
+            markerEnd: {
+                type: MarkerType.ArrowClosed,
+                color: '#334155',
+                width: 20,
+                height: 20
+            },
+            style: { stroke: '#64748b', strokeWidth: 2.5 },
+            labelStyle: { fill: '#0f172a', fontWeight: 800, fontSize: 10 },
+            labelBgStyle: { fill: '#f8fafc', fillOpacity: 0.9, rx: 4 }
+        }));
+
+        setNodes(initialNodes);
+        setEdges(initialEdges);
+
+        // Optional: fitView after a short delay to ensure rendering is complete
+        const timer = setTimeout(() => {
+            fitView({ padding: 0.2 });
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [data, setNodes, setEdges, fitView]);
 
     const exportToImage = async () => {
         if (!containerRef.current) return;
@@ -216,10 +221,10 @@ const DiagramCanvas = ({ title, data, isExport = false, direction = 'LR', levelP
             link.download = `sra-dfd-${title.toLowerCase().replace(/\s+/g, '-')}.png`;
             link.href = dataUrl;
             link.click();
-            toast.success("Image exported successfully!");
+            // toast.success("Image exported successfully!");
         } catch (err) {
             console.error("Export failed:", err);
-            toast.error("Failed to export image");
+            // toast.error("Failed to export image");
         }
     };
 
@@ -290,8 +295,6 @@ export const DFDViewer = ({ data, isExport = false }: { data: DFDInput; isExport
                         title="DFD Level 0 (Context Diagram)"
                         data={data.dfd_level_0}
                         isExport={isExport}
-                        direction="LR"
-                        levelPrefix="l0-"
                     />
                 </ReactFlowProvider>
             )}
@@ -301,8 +304,6 @@ export const DFDViewer = ({ data, isExport = false }: { data: DFDInput; isExport
                         title="DFD Level 1 (Decomposition)"
                         data={data.dfd_level_1}
                         isExport={isExport}
-                        direction="TB"
-                        levelPrefix="l1-"
                     />
                 </ReactFlowProvider>
             )}
