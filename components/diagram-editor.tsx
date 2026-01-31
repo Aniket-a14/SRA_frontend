@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { MermaidRenderer } from "@/components/mermaid-renderer"
@@ -32,7 +32,7 @@ export function DiagramEditor({ title, initialCode, syntaxExplanation, onSave, o
     const [lastError, setLastError] = useState<string | null>(null)
     const [isRepairing, setIsRepairing] = useState(false)
     const [failedCodes, setFailedCodes] = useState<Set<string>>(new Set())
-    const { token } = useAuth()
+    const { token, csrfToken } = useAuth()
 
     // Sync if prop changes externally
     useEffect(() => {
@@ -74,7 +74,7 @@ export function DiagramEditor({ title, initialCode, syntaxExplanation, onSave, o
         window.open(`https://mermaid.live/edit#base64:${data}`, '_blank')
     }
 
-    const repairWithAI = useCallback(throttle(async () => {
+    const repairWithAI = useMemo(() => throttle(async () => {
         if (!lastError) return
 
         setIsRepairing(true)
@@ -83,7 +83,8 @@ export function DiagramEditor({ title, initialCode, syntaxExplanation, onSave, o
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}`,
+                    ...(csrfToken && { "x-csrf-token": csrfToken })
                 },
                 body: JSON.stringify({
                     code: code,
@@ -123,7 +124,7 @@ export function DiagramEditor({ title, initialCode, syntaxExplanation, onSave, o
         } finally {
             setIsRepairing(false)
         }
-    }, 3000), [code, lastError, token, onSave])
+    }, 3000), [code, lastError, token, onSave, syntaxExplanation])
 
     // Automatic Repair Trigger
     useEffect(() => {

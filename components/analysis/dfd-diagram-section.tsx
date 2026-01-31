@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Network, RefreshCw, Sparkles, Binary, Shapes } from "lucide-react"
+import { Network, RefreshCw, Sparkles, Binary, Shapes } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import { generateDFD } from "@/lib/analysis-api"
@@ -28,7 +28,7 @@ interface DFDDiagramSectionProps {
 }
 
 export function DFDDiagramSection({ data, projectTitle, description, srsContent, onUpdate }: DFDDiagramSectionProps) {
-    const { token } = useAuth()
+    const { token, csrfToken } = useAuth()
     const [isLoading, setIsLoading] = useState(false)
     const [localData, setLocalData] = useState<DFDInput | null>(null)
     const [loadingPhase, setLoadingPhase] = useState(0)
@@ -62,7 +62,7 @@ export function DFDDiagramSection({ data, projectTitle, description, srsContent,
                 projectName: projectTitle,
                 description,
                 srsContent
-            })
+            }, csrfToken)
 
             // Optimistic Update
             setLocalData(result);

@@ -2,7 +2,6 @@
 
 import { z } from "zod";
 import { PromptSettings } from "@/types/project";
-import { redirect } from "next/navigation";
 
 const AnalysisSchema = z.object({
     requirements: z.string().min(1, "Requirements are required"),
@@ -28,6 +27,7 @@ export async function createAnalysisAction(
     const projectName = formData.get("projectName") as string;
     const projectId = formData.get("projectId") as string;
     const settingsRaw = formData.get("settings") as string;
+    const csrfToken = formData.get("csrfToken") as string;
 
     let settings: PromptSettings | undefined;
     try {
@@ -56,6 +56,7 @@ export async function createAnalysisAction(
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
+                ...(csrfToken && { "x-csrf-token": csrfToken })
             },
             body: JSON.stringify({
                 text: requirements,
