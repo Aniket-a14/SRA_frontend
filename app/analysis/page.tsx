@@ -11,7 +11,7 @@ import { toast } from "sonner"
 export default function AnalysisPage() {
     const router = useRouter()
     const { user, token, isLoading: authLoading } = useAuth()
-    const [history, setHistory] = useState([])
+    const [history, setHistory] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
@@ -28,7 +28,9 @@ export default function AnalysisPage() {
                 }
 
                 const data = await response.json()
-                setHistory(data)
+                // Handle standardized response format {success, data}
+                const historyData = data.data || data
+                setHistory(Array.isArray(historyData) ? historyData : [])
             } catch (err) {
                 console.error("Error fetching history:", err)
                 toast.error("Failed to load your analysis history. Please try again later.")
