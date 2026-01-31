@@ -8,10 +8,20 @@ import { AnalysisHistory } from "@/components/analysis-history"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
+// Import the type from the component
+type AnalysisHistoryItem = {
+    id: string
+    createdAt: string
+    inputText: string
+    inputPreview: string
+    version?: number
+    title?: string
+}
+
 export default function AnalysisPage() {
     const router = useRouter()
     const { user, token, isLoading: authLoading } = useAuth()
-    const [history, setHistory] = useState<any[]>([])
+    const [history, setHistory] = useState<AnalysisHistoryItem[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
