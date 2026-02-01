@@ -379,7 +379,7 @@ function AnalysisDetailContent() {
             if (!res.ok) throw new Error("Failed to start analysis");
             const result = await res.json();
             toast.success("Analysis Generation Started (Layer 3)");
-            router.push(`/analysis/${result.id}`);
+            router.push(`/analysis/${result.data.id}`);
 
         } catch (e) {
             console.error("Failed to proceed to analysis", e);
