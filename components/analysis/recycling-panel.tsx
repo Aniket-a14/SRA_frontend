@@ -3,16 +3,22 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, Zap, CheckCircle2, Database } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 
+interface RequirementContent {
+    description?: string;
+    story?: string;
+    [key: string]: unknown;
+}
+
 interface RecyclingCandidate {
     id: string;
     type: string;
-    content: Record<string, unknown> | string;
+    content: RequirementContent | string;
     tags: string[];
     qualityScore: number;
 }
@@ -60,7 +66,7 @@ export function RecyclingPanel({ onApply }: RecyclingPanelProps) {
                     Requirement Recycling
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                    Search for "Gold Standard" fragments from your past projects.
+                    Search for &quot;Gold Standard&quot; fragments from your past projects.
                 </p>
                 <form onSubmit={handleSearch} className="flex gap-2">
                     <Input
@@ -99,7 +105,7 @@ export function RecyclingPanel({ onApply }: RecyclingPanelProps) {
                         </CardHeader>
                         <CardContent className="p-3 pt-2 space-y-2">
                             <p className="text-xs line-clamp-3 text-muted-foreground italic">
-                                &quot;{typeof item.content === 'object' ? (item.content as any).description || (item.content as any).story : item.content}&quot;
+                                &quot;{typeof item.content === 'object' ? (item.content as RequirementContent).description || (item.content as RequirementContent).story : item.content}&quot;
                             </p>
 
                             <div className="flex flex-wrap gap-1">
