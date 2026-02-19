@@ -183,12 +183,12 @@ export interface StartAnalysisInput {
             projectName?: { content?: string };
             fullDescription?: { content?: string };
         };
-        metadata?: Record<string, any>;
+        metadata?: Record<string, unknown>;
     };
     draft?: boolean;
     validationResult?: {
         validation_status: string;
-        issues?: any[];
+        issues?: ValidationIssue[];
         clarification_questions?: string[];
     };
 }
@@ -215,8 +215,8 @@ export interface UpdateAnalysisInput {
         }
     }
     generatedCode?: Record<string, unknown> | null;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     inPlace?: boolean;
     skipAlignment?: boolean;
-    [key: string]: any;
+
 }
