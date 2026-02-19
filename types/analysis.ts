@@ -165,3 +165,58 @@ export interface Analysis extends AnalysisResult {
     promptSettings?: Record<string, unknown> | null
     status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED' | 'DRAFT' | 'VALIDATING' | 'VALIDATED' | 'NEEDS_FIX'
 }
+
+export interface StartAnalysisInput {
+    text: string;
+    projectId?: string | null;
+    parentId?: string;
+    rootId?: string;
+    settings?: {
+        profile?: string;
+        depth?: number;
+        strictness?: number;
+        modelProvider?: string;
+        modelName?: string;
+    }
+    srsData?: {
+        details?: {
+            projectName?: { content?: string };
+            fullDescription?: { content?: string };
+        };
+        metadata?: Record<string, any>;
+    };
+    draft?: boolean;
+    validationResult?: {
+        validation_status: string;
+        issues?: any[];
+        clarification_questions?: string[];
+    };
+}
+
+export interface UpdateAnalysisInput {
+    revisionHistory?: RevisionHistoryItem[];
+    introduction?: Introduction;
+    overallDescription?: OverallDescription;
+    externalInterfaceRequirements?: ExternalInterfaceRequirements;
+    systemFeatures?: SystemFeature[];
+    nonFunctionalRequirements?: NonFunctionalRequirements;
+    otherRequirements?: string[];
+    glossary?: GlossaryItem[];
+    appendices?: Appendices;
+    missingLogic?: string[];
+    contradictions?: string[];
+    qualityAudit?: {
+        score: number
+        issues: string[]
+        ieeeCompliance?: {
+            status: string;
+            missingSections?: string[];
+            standardAdherence?: string;
+        }
+    }
+    generatedCode?: Record<string, unknown> | null;
+    metadata?: Record<string, any>;
+    inPlace?: boolean;
+    skipAlignment?: boolean;
+    [key: string]: any;
+}

@@ -1,4 +1,5 @@
 import { DFDInput } from "@/components/DFDViewer";
+import { StartAnalysisInput, UpdateAnalysisInput } from "@/types/analysis";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -34,7 +35,7 @@ export async function generateDFD(token: string, data: { projectName: string; de
 
 // -- New centralized methods --
 
-export async function updateAnalysis(id: string, token: string, data: any) {
+export async function updateAnalysis(id: string, token: string, data: UpdateAnalysisInput) {
     const res = await fetch(`${BACKEND_URL}/analyze/${id}`, {
         method: "PUT",
         headers: {
@@ -69,7 +70,7 @@ export async function autoFixIssue(id: string, token: string, issueId: string) {
     return await res.json();
 }
 
-export async function startAnalysis(token: string, data: any) {
+export async function startAnalysis(token: string, data: StartAnalysisInput) {
     const res = await fetch(`${BACKEND_URL}/analyze`, {
         method: "POST",
         headers: {
