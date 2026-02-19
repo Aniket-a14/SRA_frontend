@@ -44,12 +44,22 @@ export interface ExternalInterfaceRequirements {
     communicationsInterfaces: string;
 }
 
+export interface Requirement {
+    id: string;
+    description: string;
+    metadata?: {
+        verification_status?: 'DRAFT_AI' | 'APPROVED_HUMAN' | 'REJECTED_HUMAN';
+        verifiedBy?: string;
+        verifiedAt?: string;
+    };
+}
+
 export interface SystemFeature {
     id?: string;
     name: string;
     description: string;
     stimulusResponseSequences: string[];
-    functionalRequirements: string[];
+    functionalRequirements: (string | Requirement)[];
     // CLI Verification Fields
     status?: 'pending' | 'verified' | 'failed';
     verification_files?: string[];
